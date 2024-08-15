@@ -1,10 +1,8 @@
 import random
 import numpy as np
 from icecream import ic
-import gymnasium as gym
 from sklearn import tree
 from sklearn.linear_model import SGDClassifier
-from sklearn.datasets import make_friedman2
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import DotProduct, WhiteKernel
 from sklearn.neural_network import MLPClassifier
@@ -79,8 +77,9 @@ def main(filename):
 
     ic("Multi layer neural network implementation")
     clf = MLPClassifier(
-        solver='lbfgs', alpha=1e-5,
-        hidden_layer_sizes=(5, 2), random_state=1
+        solver='adam', alpha=1e-5,
+        hidden_layer_sizes=(10, 10), random_state=1,
+        max_iter=2000
     )
     clf.fit(train_inputs, train_outputs)
 
@@ -116,4 +115,5 @@ def main(filename):
 
 
 if __name__ == '__main__':
-    main("datasets/data1.txt",)
+    for x in range(3):
+        main("datasets/data1.txt")

@@ -7,6 +7,7 @@ from sklearn import tree
 from sklearn.impute import KNNImputer
 from sklearn.linear_model import SGDClassifier
 from sklearn.neighbors import KNeighborsRegressor
+from sklearn.neural_network import MLPClassifier
 
 
 class Case:
@@ -62,12 +63,12 @@ def calculate_distance(train_case: Case, test_case: Case):
 
 def load_data() -> list[Case]:
     cases: list[Case] = []
-    with open("datasets/data3.txt", 'r') as file:
+    with open("datasets/dataset3b.csv", 'r') as file:
         lines = file.readlines()
         lines.pop(0)
 
         for line in lines:
-            segments = line.split(" ")
+            segments = line.split(",")
 
             input_values_raw = [x for x in segments]
             inputs = [float(x) for x in input_values_raw]
@@ -96,57 +97,62 @@ def predict(X, weights, bias):
 
 
 def main():
-    cases: list[Case] = load_data()
-    train_size = int(len(cases)*0.7)
-    test_size = len(cases)-train_size
-    train_cases = cases[:train_size]
-    test_cases = cases[train_size:]
-
-    k = 7
-    tested_cases: List[TestCase] = []
-
-    correct_cases = 0
-    wrong_cases = 0
-    ic(f"KNN implementation with k as {k}")
-    ic(f"Number of train cases {train_size}")
-    ic(f"Number of test cases {test_size}")
-
-    for test_case in test_cases:
-        tested_case = TestCase(test_case)
-        for train_case in train_cases:
-            distance = calculate_distance(train_case, test_case)
-            tested_case.tested.append(TestedCase(train_case, distance))
-
-        tested_cases.append(tested_case)
-
-        output = tested_case.calculate_output(k)
-
-        if output == test_case.output:
-            correct_cases += 1
-        else:
-            wrong_cases += 1
-
-    ic(f"{correct_cases}")
-    ic(f"{wrong_cases}")
+    # cases: list[Case] = load_data()
+    # train_size = int(len(cases) * 0.75)
+    # test_size = len(cases) - train_size
+    # train_cases = cases[:train_size]
+    # test_cases = cases[train_size:]
+    #
+    # k_values = [1, 3, 5, 7, 9]
+    # ic(f"KNN implementation with k as {k_values}")
+    # ic(f"Number of train cases {train_size}")
+    # ic(f"Number of test cases {test_size}")
+    # tested_cases: List[TestCase] = []
+    #
+    # for k in k_values:
+    #     ic(f"With K as {k}")
+    #
+    #     correct_cases = 0
+    #     wrong_cases = 0
+    #     for test_case in test_cases:
+    #         tested_case = TestCase(test_case)
+    #         for train_case in train_cases:
+    #             distance = calculate_distance(train_case, test_case)
+    #             tested_case.tested.append(TestedCase(train_case, distance))
+    #
+    #         tested_cases.append(tested_case)
+    #
+    #         output = tested_case.calculate_output(k)
+    #
+    #         if output == test_case.output:
+    #             correct_cases += 1
+    #         else:
+    #             wrong_cases += 1
+    #
+    #     ic(f"K as {k}: {correct_cases}")
+    #     ic(f"K as {k}: {wrong_cases}")
 
     ic("stochastic gradient descent learning")
 
     data = []
-    with open("datasets/data3.txt", 'r') as file:
+    with open("datasets/dataset3b.csv", 'r') as file:
         lines = file.readlines()
         lines.pop(0)
 
         for line in lines:
-            values = line.split(" ")
+            values = line.split(",")
             formatted = [float(values[index]) for index in range(0, len(values)-1)]
             formatted.append(int(values[-1]))
             data.append(formatted)
+
+    train_size = int(len(data)*0.75)
+    test_size = len(data)-train_size
 
     data = numpy.array(data)
     inputs = data[:, :-1]
     outputs = data[:, -1]
 
-    clf = SGDClassifier(loss="hinge", penalty="l2", max_iter=60)
+    clf = SGDClassifier(loss="hinge", penalty="l2", max_iter=200)
     clf = clf.fit(inputs[:1400], outputs[:1400])
 
     sgd_correct = 0
@@ -179,6 +185,29 @@ def main():
     ic(tree_correct)
     ic(tree_wrong)
 
+    ic("Multi layer neural network implementation")
+    clf = MLPClassifier(
+        solver='adam', alpha=1e-5,
+        hidden_layer_sizes=(10, 10), random_state=1,
+        # max_iter=600
+    )
+    clf.fit(inputs[:1400], outputs[:1400])
+
+    nn_correct = 0
+    nn_wrong = 0
+
+    for index in range(1400, len(inputs)):
+        out = clf.predict([inputs[index]])
+        if out[0] == outputs[index]:
+            nn_correct += 1
+        else:
+            nn_wrong += 1
+
+    ic(nn_correct)
+    ic(nn_wrong)
+
+
 
 if __name__ == '__main__':
-    main()
+    for x in range(3):
+        main()
